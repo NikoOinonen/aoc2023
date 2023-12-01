@@ -1,3 +1,64 @@
+use std::env;
+
+use days::Problem;
+
+mod days;
+
+fn parse_args() -> (i32, Vec<i32>) {
+
+    let mut args = env::args();
+    
+    args.next();
+    let day_num = match args.next() {
+        None => panic!("No day number given"),
+        Some(a) => {
+            let num = match a.parse::<i32>() {
+                Ok(n) => n,
+                Err(_) => panic!("Invalid day number {a}")
+            };
+            num
+        }
+    };
+
+    let parts = match args.next() {
+        None => vec![1, 2],
+        Some(a) => {
+            let num = match a.parse::<i32>() {
+                Ok(n) => n,
+                Err(_) => panic!("Invalid part number {a}")
+            };
+            if num <= 0 || num > 2 {
+                panic!("Invalid part number {num}");
+            }
+            vec![num]
+        }
+    };
+
+    return (day_num, parts)
+
+}
+
+fn get_day(day_num: i32) -> Box<dyn Problem> {
+    match day_num {
+        1 => Box::new(days::day_01::Day),
+        2 => Box::new(days::day_02::Day),
+        _ => panic!("Day {day_num} not implemented")
+    }
+}
+
+fn run(day_num: i32, parts: Vec<i32>) {
+    let day = get_day(day_num);
+    let input = "Test";
+    for part in parts {
+        match part {
+            1 => day.part_one(input),
+            2 => day.part_two(input),
+            _ => panic!("Invalid part")
+        }
+    }
+}
+
 fn main() {
-    println!("Hello, world!");
+    let (day_num, parts) = parse_args();
+    run(day_num, parts);
 }
