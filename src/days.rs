@@ -1,6 +1,7 @@
 
 pub mod day_01;
 pub mod day_02;
+mod day_template;
 
 pub trait Problem {
     fn part_one(&self, input: &str) -> String;
