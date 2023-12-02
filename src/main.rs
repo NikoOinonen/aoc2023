@@ -1,6 +1,7 @@
 use std::env;
 
 use days::Problem;
+use aoc2023::read_input;
 
 mod days;
 
@@ -48,13 +49,13 @@ fn get_day(day_num: i32) -> Box<dyn Problem> {
 
 fn run(day_num: i32, parts: Vec<i32>) {
     let day = get_day(day_num);
-    let input = "Test";
     for part in parts {
+        let input = read_input(day_num);
         match part {
-            1 => day.part_one(input),
-            2 => day.part_two(input),
+            1 => day.part_one(&input),
+            2 => day.part_two(&input),
             _ => panic!("Invalid part")
-        }
+        };
     }
 }
 
