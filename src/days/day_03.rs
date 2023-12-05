@@ -33,6 +33,7 @@ impl Problem for Day {
                 vals_sum += num.val;
             }
         }
+        
         println!("{vals_sum}");
         format!("{vals_sum}")
     }
@@ -56,6 +57,7 @@ impl Problem for Day {
                 vals_sum += close_nums[0].val * close_nums[1].val;
             }
         }
+
         println!("{vals_sum}");
         format!("{vals_sum}")
     }
