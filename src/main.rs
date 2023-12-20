@@ -58,6 +58,7 @@ fn get_day(day_num: i32) -> Box<dyn Problem> {
         15 => Box::new(days::day_15::Day),
         16 => Box::new(days::day_16::Day),
         17 => Box::new(days::day_17::Day),
+        18 => Box::new(days::day_18::Day),
         _ => panic!("Day {day_num} not implemented")
     }
 }
