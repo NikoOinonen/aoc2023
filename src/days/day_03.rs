@@ -50,7 +50,7 @@ impl Problem for Day {
             let mut close_nums = Vec::new();
             for num in numbers.iter() {
                 if num_part_distance(&num, &part) <= 1 {
-                    close_nums.push(num.clone());
+                    close_nums.push(num);
                 }
             }
             if close_nums.len() == 2 {

@@ -62,7 +62,7 @@ impl Problem for Day {
             let dest_left = &dest_left[1..4];
             let dest_right = &dest_right[1..4];
             if origin.chars().nth(2).unwrap() == 'A' {
-                start_locations.push(origin.clone());
+                start_locations.push(origin);
             }
             map.insert(origin, (dest_left, dest_right));
         }
