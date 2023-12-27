@@ -1,6 +1,5 @@
-use core::num;
 use std::{
-    collections::{HashMap, HashSet, VecDeque},
+    collections::{HashMap, VecDeque},
     fmt::{Debug, Display},
     ops::Not,
     vec,
@@ -164,7 +163,6 @@ impl Problem for Day {
         }
 
         let value = num_low_pulses * num_high_pulses;
-        println!("{num_low_pulses}, {num_high_pulses}");
         println!("{value}");
         format!("{value}")
     }
@@ -172,15 +170,22 @@ impl Problem for Day {
     fn part_two(&self, input: &str) -> String {
         let mut modules = get_modules(input);
 
-        let rx_con = modules.iter().find(|(_, module)| module.outputs().contains(&"rx".to_owned())).unwrap().0.clone();
-        let con_inputs: Vec<String> = modules.iter().filter_map(|(name, module)| {
-            if module.outputs().contains(&rx_con) {
-                Some(name.to_owned())
-            } else {
-                None
-            }
-        }).collect();
-        println!("{con_inputs:?}");
+        let rx_con = modules
+            .iter()
+            .find(|(_, module)| module.outputs().contains(&"rx".to_owned()))
+            .unwrap()
+            .0
+            .clone();
+        let con_inputs: Vec<String> = modules
+            .iter()
+            .filter_map(|(name, module)| {
+                if module.outputs().contains(&rx_con) {
+                    Some(name.to_owned())
+                } else {
+                    None
+                }
+            })
+            .collect();
 
         let mut pulses: VecDeque<Pulse> = VecDeque::new();
         let mut num_presses = 0;
@@ -192,9 +197,6 @@ impl Problem for Day {
                 to: "broadcaster".to_string(),
             });
             num_presses += 1;
-            if (num_presses % 100) == 0 {
-                println!("{num_presses}");
-            }
             while let Some(pulse) = pulses.pop_front() {
                 if pulse.to == rx_con && pulse.state == State::High && !con_cycles.contains_key(&pulse.to) {
                     con_cycles.insert(pulse.from.to_owned(), num_presses);
@@ -210,7 +212,6 @@ impl Problem for Day {
             }
         }
 
-        println!("{con_cycles:?}");
         let num_presses: u64 = con_cycles.iter().map(|(_, val)| *val as u64).product();
 
         println!("{num_presses}");
@@ -291,5 +292,4 @@ mod tests {
         let value = Day.part_one(input);
         assert_eq!(value, "11687500");
     }
-
 }
