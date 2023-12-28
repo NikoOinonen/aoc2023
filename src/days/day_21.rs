@@ -208,21 +208,4 @@ mod tests {
         assert_eq!(final_positions.len(), 16);
     }
 
-    #[test]
-    fn test_part_two() {
-        let input = "
-        ...........
-        .....###.#.
-        .###.##..#.
-        ..#.#...#..
-        ....#.#....
-        .##..S####.
-        .##..#...#.
-        .......##..
-        .##.#.####.
-        .##..##.##.
-        ...........";
-        let value = Day.part_two(input);
-        assert_eq!(value, "Part 2");
-    }
 }
