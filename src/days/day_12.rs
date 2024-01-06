@@ -1,7 +1,6 @@
-use std::collections::{HashSet, VecDeque};
+use std::collections::HashMap;
 
 use aoc2023::filter_input_lines;
-use itertools::Itertools;
 
 use super::Problem;
 
@@ -14,58 +13,8 @@ impl Problem for Day {
         let mut num_arrangements = 0;
         for line in lines {
             let (records, counts) = line.split_once(' ').unwrap();
-            let target_counts: VecDeque<usize> = counts.split(',').map(|s| s.parse().unwrap()).collect();
-            let total_len = records.len();
-
-            let mut visited = HashSet::new();
-            let mut to_visit = vec![(records.to_owned(), target_counts.clone(), 0)];
-
-            while let Some(state) = to_visit.pop() {
-                visited.insert(state.clone());
-                let (mut springs, mut rem_counts, pos) = state;
-
-                if let Some(count) = rem_counts.pop_front() {
-                    let rem_len: usize = if rem_counts.len() > 0 {
-                        rem_counts.iter().sum::<usize>() + rem_counts.len() - 1
-                    } else {
-                        0
-                    };
-                    let max_pos = total_len - rem_len - count;
-                    let insert_str = vec!['#'; count].iter().collect::<String>();
-                    for i in pos..=max_pos {
-                        let valid_next_char = match springs.chars().nth(i + count) {
-                            Some(c) => c != '#',
-                            None => true,
-                        };
-                        if valid_next_char && springs[i..(i + count)].chars().all(|c| c == '?' || c == '#') {
-                            let mut new_springs = springs.clone();
-                            new_springs.replace_range(i..(i + count), &insert_str);
-                            if springs.len() > (i + count) {
-                                new_springs.replace_range((i + count)..(i + count + 1), ".");
-                            }
-                            let new_state = (new_springs, rem_counts.clone(), i + count + 1);
-                            if !visited.contains(&new_state) {
-                                to_visit.push(new_state);
-                            }
-                        }
-                        if springs.chars().nth(i).unwrap() == '?' {
-                            springs.replace_range(i..i + 1, ".");
-                        }
-                    }
-                } else {
-                    let final_springs = springs.replace('?', ".");
-                    let final_counts: Vec<usize> = final_springs
-                        .split('.')
-                        .filter_map(|s| if s.len() == 0 { None } else { Some(s.len()) })
-                        .collect();
-                    if final_counts.len() != target_counts.len() {
-                        continue;
-                    }
-                    if final_counts.iter().zip_eq(&target_counts).all(|(a, b)| a == b) {
-                        num_arrangements += 1;
-                    }
-                }
-            }
+            let target_counts: Vec<usize> = counts.split(',').map(|s| s.parse().unwrap()).collect();
+            num_arrangements += find_num_arrangements(records, target_counts, &mut HashMap::new());
         }
 
         println!("{num_arrangements}");
@@ -81,65 +30,59 @@ impl Problem for Day {
             let target_counts: Vec<usize> = counts.split(',').map(|s| s.parse().unwrap()).collect();
 
             let records = vec![records; 5].join("?");
-            let target_counts: VecDeque<usize> = vec![target_counts; 5].concat().into_iter().collect();
-            let total_len = records.len();
+            let target_counts: Vec<usize> = vec![target_counts; 5].concat().into_iter().collect();
 
-            println!("{records}");
-
-            let mut visited = HashSet::new();
-            let mut to_visit = vec![(records.to_owned(), target_counts.clone(), 0)];
-
-            while let Some(state) = to_visit.pop() {
-                visited.insert(state.clone());
-                let (mut springs, mut rem_counts, pos) = state;
-
-                if let Some(count) = rem_counts.pop_front() {
-                    let rem_len: usize = if rem_counts.len() > 0 {
-                        rem_counts.iter().sum::<usize>() + rem_counts.len() - 1
-                    } else {
-                        0
-                    };
-                    let max_pos = total_len - rem_len - count;
-                    let insert_str = vec!['#'; count].iter().collect::<String>();
-                    for i in pos..=max_pos {
-                        let valid_next_char = match springs.chars().nth(i + count) {
-                            Some(c) => c != '#',
-                            None => true,
-                        };
-                        if valid_next_char && springs[i..(i + count)].chars().all(|c| c == '?' || c == '#') {
-                            let mut new_springs = springs.clone();
-                            new_springs.replace_range(i..(i + count), &insert_str);
-                            if springs.len() > (i + count) {
-                                new_springs.replace_range((i + count)..(i + count + 1), ".");
-                            }
-                            let new_state = (new_springs, rem_counts.clone(), i + count + 1);
-                            if !visited.contains(&new_state) {
-                                to_visit.push(new_state);
-                            }
-                        }
-                        if springs.chars().nth(i).unwrap() == '?' {
-                            springs.replace_range(i..i + 1, ".");
-                        }
-                    }
-                } else {
-                    let final_springs = springs.replace('?', ".");
-                    let final_counts: Vec<usize> = final_springs
-                        .split('.')
-                        .filter_map(|s| if s.len() == 0 { None } else { Some(s.len()) })
-                        .collect();
-                    if final_counts.len() != target_counts.len() {
-                        continue;
-                    }
-                    if final_counts.iter().zip_eq(&target_counts).all(|(a, b)| a == b) {
-                        num_arrangements += 1;
-                    }
-                }
-            }
+            num_arrangements += find_num_arrangements(&records, target_counts, &mut HashMap::new());
         }
 
         println!("{num_arrangements}");
         format!("{num_arrangements}")
     }
+}
+
+fn find_num_arrangements(records: &str, target_counts: Vec<usize>, counts: &mut HashMap<(String, Vec<usize>), usize>) -> usize {
+    if records.len() == 0 {
+        if target_counts.len() == 0 {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    if target_counts.len() == 0 {
+        if records.contains('#') {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    let state = (records.to_owned(), target_counts.clone());
+    if let Some(c) = counts.get(&state) {
+        return *c;
+    }
+
+    let mut count = 0;
+
+    let next_record = records.chars().nth(0).unwrap();
+    if next_record == '.' || next_record == '?' {
+        count += find_num_arrangements(&records[1..], target_counts.clone(), counts);
+    }
+    if next_record == '#' || next_record == '?' {
+        let current_target = target_counts[0];
+        let rem_len = records.len();
+        if (current_target <= rem_len)
+            && records[..current_target].chars().all(|c| c != '.')
+            && (current_target == rem_len || records.chars().nth(current_target).unwrap() != '#')
+        {
+            let new_target_counts = target_counts.into_iter().skip(1).collect();
+            let new_pos = rem_len.min(current_target + 1);
+            count += find_num_arrangements(&records[new_pos..], new_target_counts, counts);
+        }
+    }
+
+    counts.insert(state, count);
+
+    count
 }
 
 #[cfg(test)]
